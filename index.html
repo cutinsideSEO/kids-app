@@ -142,21 +142,19 @@
   </section>
 
   <!-- TASK -->
-<!-- שינוי במסך המשימה -->
-<section id="view-task" class="card hidden center">
-  <div class="title">🗺️ משימת היום</div>
-  <div class="xl mb8" id="taskText2"></div>
-  <div class="hint mb16" id="taskTip2"></div>
-  <div id="timerDisplay" class="xl mb16" style="font-size:50px; display:none;">00</div>
-  <div id="taskButtons">
-    <div class="row">
-      <button id="btnStartTimer" class="btn btn-primary hidden" style="flex:1">התחל</button>
-      <button id="btnTaskDone" class="btn btn-primary" style="flex:1">עשיתי!</button>
-      <button id="btnBackHome1" class="btn">⬅ חזרה</button>
+  <section id="view-task" class="card hidden center">
+    <div class="title">🗺️ משימת היום</div>
+    <div class="xl mb8" id="taskText2"></div>
+    <div class="hint mb16" id="taskTip2"></div>
+    <div id="timerDisplay" class="xl mb16" style="font-size:50px; display:none;">00</div>
+    <div id="taskButtons">
+      <div class="row">
+        <button id="btnStartTimer" class="btn btn-primary hidden" style="flex:1">התחל</button>
+        <button id="btnTaskDone" class="btn btn-primary" style="flex:1">עשיתי!</button>
+        <button id="btnBackHome1" class="btn">⬅ חזרה</button>
+      </div>
     </div>
-  </div>
-</section>
-
+  </section>
 
   <!-- REWARD -->
   <section id="view-reward" class="card hidden center">
@@ -192,13 +190,14 @@
 <script>
 /* ---------- Data ---------- */
 const AVATARS = ["🦊","🐵","🦁","🐼","🦄","🐨","🐯","🐸","🐰","🐥"];
-<!-- שינוי במערך המשימות -->
+// משימות (כולל כאלו עם טיימר)
 const DAILY_TASKS = [
   { id:"water3",  text:"3 לגימות מים",         tip:"מים עוזרים להתרכז." },
   { id:"jump20",  text:"20 שניות קפיצות",      tip:"קצת תזוזה נותנת אנרגיה.", duration:20 },
   { id:"stretch", text:"מתיחה קצרה",           tip:"מתיחות שומרות על גמישות.", duration:15 },
   { id:"fruit",   text:"חתיכת פרי",            tip:"פירות נותנים כוח טוב." }
 ];
+
 const COLLECTS = [
   { id:"leaf",    icon:"🍃", title:"עלה חוקר",     fact:"צמחים צריכים מים ושמש." },
   { id:"drop",    icon:"💧", title:"טיפת סקרנות",  fact:"מים טובים למוח." },
@@ -244,8 +243,7 @@ function show(viewId){
 
   // header visibility rules
   const header = document.querySelector("header");
-  if(viewId === "view-consent") header.style.visibility="hidden";
-  else header.style.visibility="visible";
+  header.style.visibility = (viewId === "view-consent") ? "hidden" : "visible";
 }
 
 function pickTaskIfNeeded(){
@@ -303,7 +301,7 @@ function renderHome(){
   if(state.inventory.length === 0){ empty.style.display="block"; }
   else{
     empty.style.display="none";
-    state.inventory.forEach((c,idx)=>{
+    state.inventory.forEach((c)=>{
       const d=document.createElement("div");
       d.className="collect"; d.title = `${c.title} – ${c.fact}`; d.textContent=c.icon;
       list.appendChild(d);
@@ -312,20 +310,24 @@ function renderHome(){
 }
 
 /* ---------- Render task ---------- */
-// בתוך renderTask נוסיף בדיקה אם יש משך זמן למשימה
+let timerInterval = null;
+
 function renderTask(){
   const t = DAILY_TASKS.find(x=>x.id===state.todayId) || DAILY_TASKS[0];
   $("taskText2").textContent = t.text;
   $("taskTip2").textContent  = "טיפ: " + t.tip;
 
+  // איפוס טיימר אם היה רץ
+  if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+  $("timerDisplay").style.display = "none";
+  $("btnStartTimer").disabled = false;
+
   const hasTimer = t.duration && t.duration > 0;
   $("btnTaskDone").classList.toggle("hidden", hasTimer);
   $("btnStartTimer").classList.toggle("hidden", !hasTimer);
-  $("timerDisplay").style.display = "none";
 }
 
-
-/* ---------- Reward ---------- */
+/* ---------- Reward & rotate ---------- */
 function addReward(){
   const pool = COLLECTS.filter(c => !state.inventory.some(i=>i.id===c.id));
   const r = (pool.length ? pool : COLLECTS)[Math.floor(Math.random()*COLLECTS.length)];
@@ -333,16 +335,21 @@ function addReward(){
   state.progress = Math.min(7, state.progress+1);
   state.weekly   = Math.min(3, state.weekly+1);
   save();
+
+  // הצג פרס
   $("rewardIcon").textContent = r.icon;
   $("rewardTitle").textContent = `כל הכבוד! ${r.title}`;
   $("rewardFact").textContent  = r.fact;
+
+  // קבע משימה חדשה לפעם הבאה
+  rotateTask(); save();
 }
 
 /* ---------- Rotate daily task (simulate next day) ---------- */
 function rotateTask(){
   const others = DAILY_TASKS.filter(t=>t.id!==state.todayId);
   const next = others[Math.floor(Math.random()*others.length)];
-  state.todayId = next.id; save();
+  state.todayId = next.id;
 }
 
 /* ---------- Parent dashboard ---------- */
@@ -353,11 +360,10 @@ function renderParent(){
 }
 
 /* ---------- Events ---------- */
-  // פונקציית הטיימר
-let timerInterval;
+// טיימר למשימות מונחות-זמן
 $("btnStartTimer").onclick = ()=>{
   const t = DAILY_TASKS.find(x=>x.id===state.todayId);
-  if(!t.duration) return;
+  if(!t || !t.duration) return;
 
   let timeLeft = t.duration;
   $("timerDisplay").style.display = "block";
@@ -369,6 +375,7 @@ $("btnStartTimer").onclick = ()=>{
     $("timerDisplay").textContent = timeLeft;
     if(timeLeft <= 0){
       clearInterval(timerInterval);
+      timerInterval = null;
       $("timerDisplay").textContent = "✅";
       setTimeout(()=>{ addReward(); show("view-reward"); }, 800);
     }
@@ -397,7 +404,10 @@ $("btnTaskDone").onclick = ()=>{ addReward(); show("view-reward"); };
 $("btnContinue").onclick = ()=>{ renderHeader(); renderHome(); show("view-home"); };
 
 $("btnResetWeek").onclick = ()=>{
-  if(confirm("לאפס שבוע?")){ state.progress=0; state.weekly=0; state.inventory=[]; rotateTask(); save(); renderParent(); }
+  if(confirm("לאפס שבוע?")){
+    state.progress=0; state.weekly=0; state.inventory=[];
+    rotateTask(); save(); renderParent();
+  }
 };
 
 /* ---------- Boot ---------- */
