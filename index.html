@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Evolve Kids – Light (6–8)</title>
+<style>
+  :root{
+    --bg1:#f0f9ff; --bg2:#e6fffb; --card:#ffffff; --text:#1f2937;
+    --accent:#14b8a6; --accent2:#0ea5e9; --muted:#64748b; --warn:#ef4444;
+    --amber1:#fff7ed; --amberText:#92400e; --greenTile:#d1fae5;
+    --border:#e5e7eb;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; font-family:system-ui, "Segoe UI", Arial, sans-serif;
+    background: linear-gradient(135deg,var(--bg1),var(--bg2)); color:var(--text);
+  }
+  .container{max-width:480px; margin:0 auto; padding:16px;}
+  header{display:flex; align-items:center; justify-content:space-between; margin:8px 0 12px}
+  header .id{display:flex; align-items:center; gap:10px}
+  .avatar{font-size:36px}
+  .brand{font-size:12px; color:var(--muted)}
+  .hello{font-weight:900; font-size:20px}
+  .btn{
+    display:inline-block; border:none; background:var(--card);
+    padding:12px 16px; border-radius:16px; box-shadow:0 2px 6px rgba(0,0,0,.06);
+    cursor:pointer; font-weight:600; border:1px solid var(--border);
+  }
+  .btn-primary{
+    background:var(--accent); color:#fff; border:none;
+    box-shadow:0 6px 18px rgba(20,184,166,.25);
+  }
+  .btn-primary:active{transform:scale(.985)}
+  .btn-danger{background:#fff1f2; color:#b91c1c; border:1px solid #fecdd3}
+  .card{background:var(--card); border:1px solid var(--border); border-radius:20px; padding:16px; box-shadow:0 8px 26px rgba(0,0,0,.05)}
+  .title{display:flex; align-items:center; gap:8px; font-weight:900; font-size:22px; margin-bottom:10px}
+  .section{margin:12px 0}
+  .grid-avatars{display:grid; grid-template-columns:repeat(5,1fr); gap:8px}
+  .avatar-btn{
+    aspect-ratio:1; display:grid; place-items:center; font-size:34px; background:#fff; border:1px solid var(--border);
+    border-radius:18px; cursor:pointer;
+  }
+  .avatar-btn.active{background:#fff7cc; border-color:#f59e0b}
+  input[type="text"], input[type="number"]{
+    width:100%; padding:14px 16px; border-radius:16px; border:1px solid var(--border); font-size:16px;
+    outline:none;
+  }
+  .pill{padding:6px 10px; border-radius:999px; background:#f1f5f9; font-size:12px; color:var(--muted); display:inline-block}
+  .progress{
+    width:100%; height:18px; border-radius:999px; background:#e2e8f0; overflow:hidden;
+  }
+  .progress > div{
+    height:100%; background:linear-gradient(90deg,var(--accent2), var(--accent)); width:0%;
+    transition:width .3s ease;
+  }
+  .tiles{display:flex; gap:8px}
+  .tile{width:48px; height:48px; display:grid; place-items:center; font-size:22px; border:1px solid var(--border); border-radius:12px; background:#fff}
+  .tile.on{background:var(--greenTile); border-color:#86efac}
+  .hint{font-size:13px; color:var(--muted)}
+  .row{display:flex; gap:10px; align-items:center}
+  .hidden{display:none}
+  .mb8{margin-bottom:8px} .mb16{margin-bottom:16px} .mb24{margin-bottom:24px}
+  .mt8{margin-top:8px} .mt16{margin-top:16px}
+  .lg{font-size:18px} .xl{font-size:22px; font-weight:900}
+  .center{text-align:center}
+  .badge{display:inline-flex; align-items:center; gap:6px; padding:6px 10px; border-radius:999px; background:#ecfeff; color:#0e7490; border:1px solid #a5f3fc; font-size:12px}
+  .list{display:grid; grid-template-columns:repeat(4,1fr); gap:8px}
+  .collect{aspect-ratio:1; display:grid; place-items:center; font-size:30px; border:1px solid var(--border); border-radius:16px; background:#fff}
+  .banner{background:linear-gradient(135deg,#fff7ed,#fffbeb); border:1px solid #fed7aa; color:var(--amberText); border-radius:18px; padding:12px}
+  .parent-note{font-size:12px; color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <div class="id">
+      <div id="hdrAvatar" class="avatar" aria-hidden="true">🧭</div>
+      <div>
+        <div class="brand">Evolve Kids</div>
+        <div id="hdrHello" class="hello">מסע החוקר</div>
+      </div>
+    </div>
+    <button id="btnParent" class="btn" aria-label="כניסה לפינת הורה">פינת הורה</button>
+  </header>
+
+  <!-- Parent Consent -->
+  <section id="view-consent" class="card">
+    <div class="title">🧑‍🧒‍🧒🔐 אישור הורה</div>
+    <p class="lg">לפני שמתחילים במסע, נדרש אישור קצר של הורה.</p>
+    <div class="mt16">
+      <label class="lg">שאלה להורה: <span class="pill">כמה זה 4 + 8?</span></label>
+      <input id="parentAnswer" type="number" inputmode="numeric" placeholder="הקלד/י תשובה" class="mt8"/>
+      <div class="row mt16">
+        <button id="btnApprove" class="btn btn-primary" style="flex:1">אני הורה – מאשר/ת</button>
+      </div>
+      <div id="consentErr" class="hint mt8" style="color:var(--warn); display:none">ניסיון נוסף בבקשה</div>
+    </div>
+    <div class="parent-note mt16">פרטיות: אין משקל/קלוריות ואין שיתוף ציבורי.</div>
+  </section>
+
+  <!-- Onboarding: avatar & name -->
+  <section id="view-onboard" class="card hidden">
+    <div class="title">🧙‍♂️ בחירת דמות ושם</div>
+    <p class="mb16">בחר/י דמות וספר/י לנו איך קוראים לך.</p>
+    <div id="avatars" class="grid-avatars mb16"></div>
+    <input id="childName" type="text" placeholder="שם הילד/ה" class="mb16"/>
+    <button id="btnStart" class="btn btn-primary" style="width:100%">קדימה למסע!</button>
+  </section>
+
+  <!-- HOME -->
+  <section id="view-home" class="card hidden">
+    <div class="title">🧭 המסע של היום</div>
+    <div class="banner mb16">
+      <div class="hint mb8">משימה יומית</div>
+      <div id="taskText" class="xl mb8"></div>
+      <div id="taskTip" class="hint">טיפ: …</div>
+      <div class="row mt16">
+        <button id="btnGoTask" class="btn btn-primary" style="flex:1">התחל/י משימה</button>
+      </div>
+    </div>
+
+    <div class="mb16">
+      <div class="hint mb8">אתגר שבועי קטן <span class="badge">מטרה: 3 ✅</span></div>
+      <div id="weeklyRow" class="tiles mb8"></div>
+    </div>
+
+    <div class="mb16">
+      <div class="hint mb8">מד התקדמות שבועי</div>
+      <div class="row">
+        <div id="mood" aria-hidden="true" style="font-size:22px">😐</div>
+        <div class="progress" style="flex:1"><div id="progBar"></div></div>
+        <div class="hint" style="min-width:64px; text-align:center"><span id="progTxt">0/7</span></div>
+      </div>
+    </div>
+
+    <div>
+      <div class="title" style="font-size:18px">🎒 הקלפים שלי</div>
+      <div id="collectList" class="list"></div>
+      <div id="collectEmpty" class="hint">עוד אין קלפים. השלמ/י משימה לפרס!</div>
+    </div>
+  </section>
+
+  <!-- TASK -->
+<!-- שינוי במסך המשימה -->
+<section id="view-task" class="card hidden center">
+  <div class="title">🗺️ משימת היום</div>
+  <div class="xl mb8" id="taskText2"></div>
+  <div class="hint mb16" id="taskTip2"></div>
+  <div id="timerDisplay" class="xl mb16" style="font-size:50px; display:none;">00</div>
+  <div id="taskButtons">
+    <div class="row">
+      <button id="btnStartTimer" class="btn btn-primary hidden" style="flex:1">התחל</button>
+      <button id="btnTaskDone" class="btn btn-primary" style="flex:1">עשיתי!</button>
+      <button id="btnBackHome1" class="btn">⬅ חזרה</button>
+    </div>
+  </div>
+</section>
+
+
+  <!-- REWARD -->
+  <section id="view-reward" class="card hidden center">
+    <div id="rewardIcon" style="font-size:70px" aria-hidden="true">⭐</div>
+    <div class="xl mt8" id="rewardTitle">כל הכבוד!</div>
+    <div class="lg hint mt8" id="rewardFact">הרווחת קלף חדש.</div>
+    <button id="btnContinue" class="btn btn-primary mt16">המשך</button>
+  </section>
+
+  <!-- PARENT DASHBOARD -->
+  <section id="view-parent" class="card hidden">
+    <div class="title">👨‍👩‍👧 פינת הורה</div>
+    <div class="mb16">
+      <div class="hint mb8">התקדמות שבועית</div>
+      <div class="progress"><div id="progBar2"></div></div>
+      <div class="hint mt8" id="progTxt2">0 / 7 ימים הושלמו</div>
+    </div>
+    <div class="mb16">
+      <div class="hint mb8">פרטיות ובטיחות</div>
+      <ul class="hint" style="margin:0; padding-right:18px; line-height:1.8">
+        <li>אין הצגת משקל/קלוריות</li>
+        <li>אין שיתוף ציבורי; קבוצה קטנה/משפחה בלבד</li>
+        <li>איסוף נתונים מינימלי (פרוטוטייפ)</li>
+      </ul>
+    </div>
+    <div class="row">
+      <button id="btnResetWeek" class="btn btn-danger" style="flex:1">איפוס שבוע</button>
+      <button id="btnBackHome2" class="btn" style="flex:1">⬅ חזרה</button>
+    </div>
+  </section>
+</div>
+
+<script>
+/* ---------- Data ---------- */
+const AVATARS = ["🦊","🐵","🦁","🐼","🦄","🐨","🐯","🐸","🐰","🐥"];
+<!-- שינוי במערך המשימות -->
+const DAILY_TASKS = [
+  { id:"water3",  text:"3 לגימות מים",         tip:"מים עוזרים להתרכז." },
+  { id:"jump20",  text:"20 שניות קפיצות",      tip:"קצת תזוזה נותנת אנרגיה.", duration:20 },
+  { id:"stretch", text:"מתיחה קצרה",           tip:"מתיחות שומרות על גמישות.", duration:15 },
+  { id:"fruit",   text:"חתיכת פרי",            tip:"פירות נותנים כוח טוב." }
+];
+const COLLECTS = [
+  { id:"leaf",    icon:"🍃", title:"עלה חוקר",     fact:"צמחים צריכים מים ושמש." },
+  { id:"drop",    icon:"💧", title:"טיפת סקרנות",  fact:"מים טובים למוח." },
+  { id:"star",    icon:"⭐", title:"כוכב אמיץ",     fact:"צעד קטן כל יום!" },
+  { id:"seed",    icon:"🌱", title:"נבט קטן",       fact:"מנוחה עוזרת לגדול." },
+  { id:"compass", icon:"🧭", title:"מצפן",          fact:"כל מסע מתחיל בצעד." }
+];
+
+/* ---------- Storage helpers ---------- */
+const LS = {
+  get: (k, f)=>{ try{ const v = localStorage.getItem(k); return v? JSON.parse(v): f }catch{return f} },
+  set: (k,v)=>{ try{ localStorage.setItem(k, JSON.stringify(v)) }catch{} },
+  del: (k)=>{ try{ localStorage.removeItem(k) }catch{} }
+};
+
+/* ---------- State ---------- */
+const state = {
+  parentOK: LS.get("ek_parentOK", false),
+  name: LS.get("ek_name",""),
+  avatar: LS.get("ek_avatar",""),
+  progress: LS.get("ek_progress",0),        // 0..7 days
+  weekly: LS.get("ek_weekly",0),            // 0..3
+  inventory: LS.get("ek_inventory",[]),     // collected items
+  todayId: LS.get("ek_todayId","")          // current task id
+};
+
+function save(){
+  LS.set("ek_parentOK", state.parentOK);
+  LS.set("ek_name", state.name);
+  LS.set("ek_avatar", state.avatar);
+  LS.set("ek_progress", state.progress);
+  LS.set("ek_weekly", state.weekly);
+  LS.set("ek_inventory", state.inventory);
+  LS.set("ek_todayId", state.todayId);
+}
+
+/* ---------- DOM helpers ---------- */
+function $(id){ return document.getElementById(id) }
+function show(viewId){
+  ["view-consent","view-onboard","view-home","view-task","view-reward","view-parent"]
+    .forEach(id => $(id).classList.add("hidden"));
+  $(viewId).classList.remove("hidden");
+
+  // header visibility rules
+  const header = document.querySelector("header");
+  if(viewId === "view-consent") header.style.visibility="hidden";
+  else header.style.visibility="visible";
+}
+
+function pickTaskIfNeeded(){
+  if(!state.todayId){
+    const t = DAILY_TASKS[Math.floor(Math.random()*DAILY_TASKS.length)];
+    state.todayId = t.id; save();
+  }
+}
+
+/* ---------- Render header ---------- */
+function renderHeader(){
+  $("hdrAvatar").textContent = state.avatar || "🧭";
+  $("hdrHello").textContent = state.name ? `שלום, ${state.name}!` : "מסע החוקר";
+}
+
+/* ---------- Render avatars grid ---------- */
+function renderAvatars(){
+  const wrap = $("avatars");
+  wrap.innerHTML = "";
+  AVATARS.forEach(a=>{
+    const b = document.createElement("button");
+    b.className = "avatar-btn" + (state.avatar===a?" active":"");
+    b.textContent = a;
+    b.onclick = ()=>{ state.avatar=a; save(); renderAvatars() };
+    wrap.appendChild(b);
+  });
+}
+
+/* ---------- Render home ---------- */
+function renderHome(){
+  pickTaskIfNeeded();
+  const task = DAILY_TASKS.find(t=>t.id===state.todayId) || DAILY_TASKS[0];
+  $("taskText").textContent = task.text;
+  $("taskTip").textContent  = "טיפ: " + task.tip;
+
+  // weekly mini challenge (3)
+  const row = $("weeklyRow"); row.innerHTML="";
+  for(let i=0; i<3; i++){
+    const d=document.createElement("div");
+    d.className="tile"+(i<state.weekly?" on":"");
+    d.textContent = i<state.weekly ? "✅" : "⬜";
+    row.appendChild(d);
+  }
+
+  // progress
+  const pct = Math.min(100, Math.round((state.progress/7)*100));
+  $("progBar").style.width = pct + "%";
+  $("progTxt").textContent = `${state.progress}/7`;
+  $("mood").textContent = state.progress>=5 ? "😄" : state.progress>=2 ? "🙂" : "😐";
+
+  // inventory
+  const list = $("collectList");
+  const empty = $("collectEmpty");
+  list.innerHTML="";
+  if(state.inventory.length === 0){ empty.style.display="block"; }
+  else{
+    empty.style.display="none";
+    state.inventory.forEach((c,idx)=>{
+      const d=document.createElement("div");
+      d.className="collect"; d.title = `${c.title} – ${c.fact}`; d.textContent=c.icon;
+      list.appendChild(d);
+    });
+  }
+}
+
+/* ---------- Render task ---------- */
+// בתוך renderTask נוסיף בדיקה אם יש משך זמן למשימה
+function renderTask(){
+  const t = DAILY_TASKS.find(x=>x.id===state.todayId) || DAILY_TASKS[0];
+  $("taskText2").textContent = t.text;
+  $("taskTip2").textContent  = "טיפ: " + t.tip;
+
+  const hasTimer = t.duration && t.duration > 0;
+  $("btnTaskDone").classList.toggle("hidden", hasTimer);
+  $("btnStartTimer").classList.toggle("hidden", !hasTimer);
+  $("timerDisplay").style.display = "none";
+}
+
+
+/* ---------- Reward ---------- */
+function addReward(){
+  const pool = COLLECTS.filter(c => !state.inventory.some(i=>i.id===c.id));
+  const r = (pool.length ? pool : COLLECTS)[Math.floor(Math.random()*COLLECTS.length)];
+  state.inventory.push(r);
+  state.progress = Math.min(7, state.progress+1);
+  state.weekly   = Math.min(3, state.weekly+1);
+  save();
+  $("rewardIcon").textContent = r.icon;
+  $("rewardTitle").textContent = `כל הכבוד! ${r.title}`;
+  $("rewardFact").textContent  = r.fact;
+}
+
+/* ---------- Rotate daily task (simulate next day) ---------- */
+function rotateTask(){
+  const others = DAILY_TASKS.filter(t=>t.id!==state.todayId);
+  const next = others[Math.floor(Math.random()*others.length)];
+  state.todayId = next.id; save();
+}
+
+/* ---------- Parent dashboard ---------- */
+function renderParent(){
+  const pct = Math.min(100, Math.round((state.progress/7)*100));
+  $("progBar2").style.width = pct + "%";
+  $("progTxt2").textContent = `${state.progress} / 7 ימים הושלמו`;
+}
+
+/* ---------- Events ---------- */
+  // פונקציית הטיימר
+let timerInterval;
+$("btnStartTimer").onclick = ()=>{
+  const t = DAILY_TASKS.find(x=>x.id===state.todayId);
+  if(!t.duration) return;
+
+  let timeLeft = t.duration;
+  $("timerDisplay").style.display = "block";
+  $("timerDisplay").textContent = timeLeft;
+  $("btnStartTimer").disabled = true;
+
+  timerInterval = setInterval(()=>{
+    timeLeft--;
+    $("timerDisplay").textContent = timeLeft;
+    if(timeLeft <= 0){
+      clearInterval(timerInterval);
+      $("timerDisplay").textContent = "✅";
+      setTimeout(()=>{ addReward(); show("view-reward"); }, 800);
+    }
+  },1000);
+};
+
+$("btnApprove").onclick = ()=>{
+  const ok = $("parentAnswer").value.trim() === "12";
+  if(ok){ state.parentOK = true; save(); show("view-onboard"); renderAvatars(); }
+  else { $("consentErr").style.display="block"; }
+};
+
+$("btnStart").onclick = ()=>{
+  state.name = $("childName").value.trim();
+  if(!state.avatar || !state.name){ alert("בחר/י דמות והקלד/י שם"); return; }
+  save(); renderHeader(); pickTaskIfNeeded(); renderHome(); show("view-home");
+};
+
+$("btnParent").onclick = ()=>{ renderParent(); show("view-parent"); };
+$("btnBackHome2").onclick = ()=>{ renderHeader(); renderHome(); show("view-home"); };
+
+$("btnGoTask").onclick = ()=>{ renderTask(); show("view-task"); };
+$("btnBackHome1").onclick = ()=>{ renderHome(); show("view-home"); };
+
+$("btnTaskDone").onclick = ()=>{ addReward(); show("view-reward"); };
+$("btnContinue").onclick = ()=>{ renderHeader(); renderHome(); show("view-home"); };
+
+$("btnResetWeek").onclick = ()=>{
+  if(confirm("לאפס שבוע?")){ state.progress=0; state.weekly=0; state.inventory=[]; rotateTask(); save(); renderParent(); }
+};
+
+/* ---------- Boot ---------- */
+(function boot(){
+  renderHeader();
+  if(!state.parentOK){ show("view-consent"); return; }
+  if(!state.avatar || !state.name){ show("view-onboard"); renderAvatars(); return; }
+  renderHome(); show("view-home");
+})();
+</script>
+</body>
+</html>
